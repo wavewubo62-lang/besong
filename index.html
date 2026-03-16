@@ -102,10 +102,50 @@
 
       .section-body {
         margin: 0;
+        text-indent: 2em;
+        margin-bottom: 1.8em;
+        text-align: justify;
       }
 
       .section-body + .section-body {
         margin-top: 12px;
+      }
+
+      .prose-visual {
+        width: 52%;
+        aspect-ratio: 1 / 1;
+        background: #f1efea;
+        overflow: hidden;
+        margin: 0 0 14px;
+        margin-left: 8%;
+      }
+
+      .prose-visual img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: grayscale(0.3) sepia(0.18) contrast(1.06) saturate(0.9);
+        opacity: 0.96;
+      }
+
+      .prose-caption {
+        width: 52%;
+        margin: 0 0 20px;
+        margin-left: 8%;
+        font-size: 10px;
+        line-height: 1.6;
+        letter-spacing: 0.08em;
+        color: #8c857e;
+        opacity: 0.85;
+      }
+
+      .prose-caption span {
+        display: inline-block;
+        padding: 6px 8px;
+        border: 1px solid rgba(140, 133, 126, 0.28);
+        background: rgba(249, 248, 246, 0.72);
+        backdrop-filter: blur(1px);
       }
 
       .collection-link {
@@ -199,6 +239,12 @@
         .section {
           margin-bottom: 52px;
         }
+
+        .prose-visual,
+        .prose-caption {
+          width: 100%;
+          margin-left: 0;
+        }
       }
     </style>
   </head>
@@ -226,10 +272,7 @@
                 发酵黄油在低温中缓慢软化，释放出的气味里，有远方牧场的青草与雨后的潮湿空气。
               </p>
               <p class="section-body">
-                我们不急于伸手改变它们，只是耐心地等待它们彼此适应。
-                面筋的网状在时间中渐渐成形，微小的气泡像是从土地深处升起的呼吸。
-                在这个过程中，每一种原料都保持着自己的性格：粗糙、细腻、安静或张扬，
-                没有任何一种需要被技巧遮掩或被香料修饰。
+                我们不急于伸手改变它们，只是耐心地等待它们彼此适应。面筋的网状在时间中渐渐成形，微小的气泡像是从土地深处升起的呼吸。在这个过程中，每一种原料都保持着自己的性格：粗糙、细腻、安静或张扬，没有任何一种需要被技巧遮掩或被香料修饰。
               </p>
               <p class="section-body">
                 对我们来说，配方从来不是秘密，而是一种诚实的记录：写下是哪片土地的麦，
@@ -240,12 +283,12 @@
 
             <figure class="imagery" aria-label="北欧风景占位图">
               <img
-                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80"
+                src="https://images.unsplash.com/photo-1534620808146-d33bb39128b2?q=80&w=2000&auto=format&fit=crop"
                 alt="Soft northern landscape, muted tones and open sky"
                 loading="lazy"
               />
               <figcaption class="imagery-caption">
-                一片安静的北方风景——像一块尚未成形的面团，被光与风轻轻翻动。
+                谷物在光线下呈现出颗粒的尊严——它们曾携带风与泥土，如今在这间实验室里静默。
               </figcaption>
             </figure>
 
@@ -272,12 +315,12 @@
 
             <figure class="imagery" aria-label="北欧室内占位图">
               <img
-                src="https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80"
+                src="https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
                 alt="Minimal northern interior with soft daylight"
                 loading="lazy"
               />
               <figcaption class="imagery-caption">
-                光线在极简的室内缓慢移动，像一枚刚出炉的面包，在桌面上悄悄冷却。
+                内部的微型建筑：由酵母呼吸出的气泡，撑起了贝颂对空间与留白的全部理解。
               </figcaption>
             </figure>
 
