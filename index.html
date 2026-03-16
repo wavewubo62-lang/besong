@@ -25,6 +25,12 @@
 
       body {
         background: #f9f8f6; /* 纸张米白 */
+        background-image: linear-gradient(
+            rgba(244, 244, 242, 0.4) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(244, 244, 242, 0.4) 1px, transparent 1px);
+        background-size: 20px 20px;
         color: #2c2c2c; /* 炭灰正文 */
         font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
         -webkit-font-smoothing: antialiased;
@@ -121,6 +127,17 @@
         color: #8c857e;
       }
 
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       /* Imagery */
       .imagery {
         width: 70%;
@@ -129,6 +146,7 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
+        animation: fadeIn 1.2s ease-out forwards;
       }
 
       .imagery img {
@@ -148,32 +166,37 @@
       /* Footer */
       footer {
         flex: 0 0 auto;
-        padding: 16px 24px 28px;
+        padding: 40px 24px 60px;
+        border-top: 1px solid rgba(140, 133, 126, 0.15);
       }
 
       .footer-inner {
         max-width: 650px;
         margin: 0 auto;
-        text-align: center;
+        text-align: left;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
       }
 
       .footer-note {
         margin: 0;
-        font-size: 11px;
-        line-height: 1.9;
-        letter-spacing: 0.12em;
+        font-size: 10px;
+        line-height: 1.8;
+        letter-spacing: 0.15em;
         text-transform: uppercase;
         color: #8c857e;
       }
 
       .footer-contact {
-        margin: 80px auto 0;
-        max-width: 650px;
-        text-align: center;
-        font-size: 0.7rem;
+        margin: 0;
+        text-align: right;
+        font-size: 10px;
         line-height: 1.8;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
         color: #2c2c2c;
-        opacity: 0.5;
+        opacity: 0.6;
       }
 
       @media (max-width: 640px) {
@@ -197,6 +220,16 @@
 
         .section {
           margin-bottom: 52px;
+        }
+
+        .footer-inner {
+          grid-template-columns: 1fr;
+          text-align: left;
+          gap: 32px;
+        }
+
+        .footer-contact {
+          text-align: left;
         }
       }
     </style>
@@ -340,11 +373,15 @@
       <footer>
         <div class="footer-inner">
           <p class="footer-note">
-            于都柏林构思，于武汉呈现。我们利用数字化的精准，只为重塑手工的温度。
+            CONCEIVED IN DUBLIN, PRESENTED IN WUHAN.<br />
+            于都柏林构思，于武汉呈现。<br />
+            REDEFINING HANDMADE TEMPERATURE THROUGH DIGITAL PRECISION.<br />
+            我们利用数字化的精准，只为重塑手工的温度。
           </p>
           <div class="footer-contact">
-            <div>武汉市汉阳区保利香颂五期陶馨路22号附18号</div>
-            <div>Contact / 13476167632</div>
+            <div>WUHAN HANYANG DIST.陶馨路22号附18号</div>
+            <div>CONTACT / 13476167632</div>
+            <div>BATCH NO. 2026-03-16</div>
           </div>
         </div>
       </footer>
