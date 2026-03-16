@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Besong</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: #f9f8f6; /* 纸张米白 */
+        color: #2c2c2c; /* 炭灰正文 */
+        font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .shell {
+        flex: 1 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .inner {
+        width: 100%;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 64px 24px 80px;
+      }
+
+      /* Hero */
+      .hero {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 0 32px;
+      }
+
+      .hero-content {
+        max-width: 650px;
+        margin: 0 auto;
+      }
+
+      .hero-title {
+        font-size: 32px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        margin: 0 0 16px;
+      }
+
+      .hero-subtitle {
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #8c857e; /* stone subtitle */
+      }
+
+      /* Prose sections */
+      main {
+        padding-top: 24px;
+      }
+
+      .section {
+        max-width: 650px;
+        margin: 0 auto 64px;
+        line-height: 2;
+        font-size: 15px;
+        text-align: left;
+      }
+
+      .section-title {
+        font-size: 13px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        margin: 0 0 20px;
+        color: #8c857e;
+      }
+
+      .section-body {
+        margin: 0;
+      }
+
+      .section-body + .section-body {
+        margin-top: 12px;
+      }
+
+      .collection-link {
+        max-width: 650px;
+        margin: 100px auto;
+        text-align: center;
+        font-size: 14px;
+        line-height: 2;
+      }
+
+      .collection-link a {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        color: #8c857e;
+      }
+
+      /* Imagery */
+      .imagery {
+        width: 70%;
+        margin: 80px auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .imagery img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .imagery-caption {
+        margin-top: 10px;
+        font-size: 0.6rem;
+        line-height: 1.6;
+        color: #8c857e;
+        opacity: 0.7;
+      }
+
+      /* Footer */
+      footer {
+        flex: 0 0 auto;
+        padding: 16px 24px 28px;
+      }
+
+      .footer-inner {
+        max-width: 650px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .footer-note {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.9;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #8c857e;
+      }
+
+      .footer-contact {
+        margin: 80px auto 0;
+        max-width: 650px;
+        text-align: center;
+        font-size: 0.7rem;
+        line-height: 1.8;
+        color: #2c2c2c;
+        opacity: 0.5;
+      }
+
+      @media (max-width: 640px) {
+        .inner {
+          padding: 40px 20px 64px;
+        }
+
+        .hero {
+          min-height: 50vh;
+        }
+
+        .hero-title {
+          font-size: 26px;
+          letter-spacing: 0.26em;
+        }
+
+        .hero-subtitle {
+          font-size: 13px;
+          letter-spacing: 0.16em;
+        }
+
+        .section {
+          margin-bottom: 52px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="shell">
+        <div class="inner">
+          <!-- Hero -->
+          <header class="hero" aria-label="Besong cover">
+            <div class="hero-content">
+              <h1 class="hero-title">Besong</h1>
+              <div class="hero-subtitle">A dialogue of soil and soul.</div>
+            </div>
+          </header>
+
+          <!-- Sections -->
+          <main aria-label="Besong writings">
+            <!-- Section A: 原料的诚实 -->
+            <section class="section" aria-label="原料的诚实">
+              <h2 class="section-title">原料的诚实</h2>
+              <p class="section-body">
+                我们始终记得，一块面团最初的形态，只是面粉、水与酵母静静相遇的瞬间。
+                谷物从田间被收割、碾磨，再被带进这间安静的房间时，身上还带着风、阳光与土壤的重量；
+                发酵黄油在低温中缓慢软化，释放出的气味里，有远方牧场的青草与雨后的潮湿空气。
+              </p>
+              <p class="section-body">
+                我们不急于伸手改变它们，只是耐心地等待它们彼此适应。
+                面筋的网状在时间中渐渐成形，微小的气泡像是从土地深处升起的呼吸。
+                在这个过程中，每一种原料都保持着自己的性格：粗糙、细腻、安静或张扬，
+                没有任何一种需要被技巧遮掩或被香料修饰。
+              </p>
+              <p class="section-body">
+                对我们来说，配方从来不是秘密，而是一种诚实的记录：写下是哪片土地的麦，
+                哪个季节的奶，怎样的水和怎样的盐。我们愿意退到最后，只做一个守望与照看的人；
+                让面团在属于自己的轨迹里慢慢醒来，让自然在其中完成一场从未中断的对谈。
+              </p>
+            </section>
+
+            <figure class="imagery" aria-label="北欧风景占位图">
+              <img
+                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80"
+                alt="Soft northern landscape, muted tones and open sky"
+                loading="lazy"
+              />
+              <figcaption class="imagery-caption">
+                一片安静的北方风景——像一块尚未成形的面团，被光与风轻轻翻动。
+              </figcaption>
+            </figure>
+
+            <!-- Section B: 空间的留白 -->
+            <section class="section" aria-label="空间的留白">
+              <h2 class="section-title">空间的留白</h2>
+              <p class="section-body">
+                我们总觉得，面包并不是简单的食物单位，而是摆放在日常空间里的微型建筑。
+                外壳的弧度像一段小小的屋顶，裂纹是风长期停留后的痕迹；
+                内部柔软的组织，则像是一座城市看不见的内里——那些被呼吸、对话与沉默一点点撑起的空隙。
+              </p>
+              <p class="section-body">
+                因此，我们为每一枚面包预留足够的空间：桌面不需要拥挤，墙面可以保持沉默，
+                只让光线从窗外缓缓滑入，在表面停驻，再沿着切面缓慢下沉。
+                当一刀落下，碎屑轻轻散落，声音很小，却足以为一个下午定下新的节奏。
+              </p>
+              <p class="section-body">
+                有时是一枚仍带余温的碱水球，被带进书桌一角，在翻页与写字之间悄然冷却；
+                有时是一截长棍，横卧在餐桌中央，把家人之间的距离拉得更近一些。
+                当审美不再只停留在器物与陈列，而是悄悄延伸到餐盘、木板与指尖，
+                生活便在这样一口一口的咀嚼里，慢慢找回久违的留白与从容。
+              </p>
+            </section>
+
+            <figure class="imagery" aria-label="北欧室内占位图">
+              <img
+                src="https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80"
+                alt="Minimal northern interior with soft daylight"
+                loading="lazy"
+              />
+              <figcaption class="imagery-caption">
+                光线在极简的室内缓慢移动，像一枚刚出炉的面包，在桌面上悄悄冷却。
+              </figcaption>
+            </figure>
+
+            <!-- Section C: 双城叙事 -->
+            <section class="section" aria-label="双城叙事">
+              <h2 class="section-title">双城叙事</h2>
+              <p class="section-body">
+                都柏林的云层总是低低地压在海面上，潮汐一遍遍抚平沙岸，让我们学会什么叫做
+                「质感的耐心」：石墙在雨水中被时间慢慢磨亮，木窗在风里发出极轻的声响，
+                一切都不急于呈现锋利的边缘，只是反复提醒我们，真正持久的形态往往最安静。
+              </p>
+              <p class="section-body">
+                武汉则截然不同。江风带着湿度与烟火气，在桥梁与巷口之间来回穿梭；
+                清晨摊位升起的蒸汽，和深夜路边最后一盏灯，构成了另一种节奏。
+                这里的生活是热烈的、黏稠的，也是毫不掩饰的——一碗汤、一块点心，
+                都自然地带着人群与时间的气味。
+              </p>
+              <p class="section-body">
+                Besong 便在这两座城市之间，搭建起一条看不见的廊道。
+                我们在都柏林的清冷空气里校对温度与湿度，在武汉的晨光中唤醒沉睡一夜的面团；
+                静谧的审美与炽热的日常，并不是彼此抵消，而是在一枚枚面包的表面与内部，
+                找到可以共存的形态。于是一种新的节奏缓缓浮现：既像海边的潮起潮落，
+                也像江城渡口永不停歇的往来，在每一次咀嚼之间，悄悄完成一次双城的对话。
+              </p>
+            </section>
+
+            <div class="collection-link">
+              <p style="margin: 0 0 16px;">
+                每一个面团都有它的编号与情绪。点击此处，查看今日 Besong 实验室的成品清单。
+              </p>
+              <a href="collection.html">[ 查看完整系列 / View Collection ]</a>
+            </div>
+
+            <!-- Collection -->
+            <section class="section" aria-label="Collection">
+              <h2 class="section-title">Collection / 选集</h2>
+              <div style="display: grid; row-gap: 10px; column-gap: 24px;">
+                <div style="display: flex; justify-content: space-between; gap: 24px;">
+                  <div>Viennoiserie</div>
+                  <div>Classic Croissant</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px;">
+                  <div>Viennoiserie</div>
+                  <div>Almond Morning Bun</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px;">
+                  <div>Levain Loaves</div>
+                  <div>Malted Wheat Sourdough</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px;">
+                  <div>Levain Loaves</div>
+                  <div>Sesame Country Bread</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px;">
+                  <div>Small Bakes</div>
+                  <div>Citrus Olive Oil Cake</div>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+
+      <footer>
+        <div class="footer-inner">
+          <p class="footer-note">
+            于都柏林构思，于武汉呈现。我们利用数字化的精准，只为重塑手工的温度。
+          </p>
+          <div class="footer-contact">
+            <div>武汉市汉阳区保利香颂五期陶馨路22号附18号</div>
+            <div>Contact / 13476167632</div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+
