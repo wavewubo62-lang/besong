@@ -8,380 +8,865 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@300;400&display=swap"
       rel="stylesheet"
     />
 
     <style>
-      * {
-        box-sizing: border-box;
+      :root {
+        --bg: #f6f4f0;
+        --text: #2a2623;
+        --muted: #9b9590;
+        --accent: #c4a882;
+        --divider: rgba(0,0,0,0.06);
+        --serif: "Fraunces", Georgia, serif;
+        --sans: "Inter", -apple-system, sans-serif;
       }
 
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html { scroll-behavior: smooth; }
 
       body {
-        background-color: #f9f8f6;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        background-blend-mode: overlay;
-        opacity: 0.98; /* 让背景看起来更有厚度 */
-        color: #2c2c2c; /* 炭灰正文 */
-        font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--serif);
         -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
       }
 
-      .page {
-        min-height: 100vh;
+      /* ─── Noise texture overlay ───
+         FIX: Added explicit width/height to SVG + background-size to prevent
+         mobile rendering artifacts (iOS Safari / Android renders feTurbulence
+         as a solid block without intrinsic dimensions)
+      */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        background-size: 256px 256px;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* FIX: Disable noise texture on mobile — renders poorly and adds no visual value */
+      @media (max-width: 768px) {
+        body::before { display: none; }
+      }
+
+      /* ─── Navigation ─── */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        padding: 28px 40px;
         display: flex;
-        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .shell {
-        flex: 1 0 auto;
+      nav.scrolled {
+        padding: 16px 40px;
+        background: rgba(246,244,240,0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--divider);
+      }
+
+      .nav-logo {
+        font-family: var(--serif);
+        font-size: 15px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        font-weight: 400;
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .nav-links {
         display: flex;
+        gap: 32px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        font-family: var(--sans);
+        font-size: 11px;
+        font-weight: 300;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.3s ease;
+        position: relative;
+      }
+
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 1px;
+        background: var(--accent);
+        transition: width 0.3s ease;
+      }
+
+      .nav-links a:hover { color: var(--text); }
+      .nav-links a:hover::after { width: 100%; }
+
+      /* ─── Hamburger (mobile) ─── */
+      .hamburger {
+        display: none;
         flex-direction: column;
-        align-items: stretch;
+        gap: 5px;
+        cursor: pointer;
+        padding: 4px;
+        background: none;
+        border: none;
+        z-index: 300;
       }
 
-      .inner {
-        width: 100%;
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 64px 24px 80px;
+      .hamburger span {
+        display: block;
+        width: 22px;
+        height: 1px;
+        background: var(--text);
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        transform-origin: center;
       }
 
-      /* Hero */
+      .hamburger.open span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+      .hamburger.open span:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      .hamburger.open span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      /* ─── Mobile Drawer ─── */
+      .mobile-nav {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(246,244,240,0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 150;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+      }
+
+      .mobile-nav.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .mobile-nav a {
+        font-family: var(--serif);
+        font-size: clamp(28px, 8vw, 40px);
+        font-weight: 300;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text);
+        text-decoration: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), color 0.2s ease;
+      }
+
+      .mobile-nav.open a {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .mobile-nav.open a:nth-child(1) { transition-delay: 0.05s; }
+      .mobile-nav.open a:nth-child(2) { transition-delay: 0.1s; }
+      .mobile-nav.open a:nth-child(3) { transition-delay: 0.15s; }
+
+      .mobile-nav a:hover { color: var(--accent); }
+
+      /* ─── Hero ─── */
       .hero {
-        min-height: 60vh;
+        min-height: 100vh;
+        min-height: 100svh; /* iOS safe viewport */
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 40px 0 32px;
+        padding: 120px 24px 80px;
+        position: relative;
       }
 
-      .hero-content {
-        max-width: 650px;
-        margin: 0 auto;
+      .hero-badge {
+        font-family: var(--sans);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 32px;
+        opacity: 0;
+        transform: translateY(12px);
+        animation: fadeUp 1s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
       .hero-title {
-        font-size: 32px;
-        letter-spacing: 0.32em;
+        font-size: clamp(42px, 8vw, 72px);
+        font-weight: 300;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
-        margin: 0 0 16px;
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeUp 1.2s 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
       .hero-subtitle {
-        font-size: 14px;
-        letter-spacing: 0.18em;
+        font-family: var(--sans);
+        font-size: 13px;
+        letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: #8c857e; /* stone subtitle */
+        color: var(--muted);
+        font-weight: 300;
+        opacity: 0;
+        transform: translateY(12px);
+        animation: fadeUp 1s 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
-      /* Prose sections */
-      main {
-        padding-top: 24px;
+      .hero-scroll {
+        position: absolute;
+        bottom: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        opacity: 0;
+        animation: fadeUp 1s 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
-      .section {
-        max-width: 650px;
-        margin: 0 auto 64px;
-        line-height: 2;
-        font-size: 15px;
-        text-align: left;
+      .hero-scroll span {
+        font-family: var(--sans);
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .scroll-line {
+        width: 1px;
+        height: 40px;
+        background: linear-gradient(to bottom, var(--accent), transparent);
+        animation: scrollPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes scrollPulse {
+        0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+        50% { opacity: 1; transform: scaleY(1); }
+      }
+
+      @keyframes fadeUp {
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ─── Divider ─── */
+      .divider {
+        width: 48px;
+        height: 1px;
+        background: var(--accent);
+        margin: 0 auto;
+        opacity: 0.5;
+      }
+
+      /* ─── Sections ─── */
+      .content-wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      .text-section {
+        padding: 100px 0;
+        opacity: 0;
+        transform: translateY(32px);
+        transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .text-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .section-number {
+        font-family: var(--sans);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        color: var(--accent);
+        margin-bottom: 12px;
+        display: block;
       }
 
       .section-title {
         font-size: 13px;
+        font-weight: 400;
         letter-spacing: 0.24em;
         text-transform: uppercase;
-        margin: 0 0 20px;
-        color: #8c857e;
+        color: var(--muted);
+        margin-bottom: 36px;
       }
 
       .section-body {
-        margin: 0;
-        margin-bottom: 1.9em;
-        text-align: left;
+        font-size: 15.5px;
+        line-height: 2.1;
         letter-spacing: 0.02em;
+        margin-bottom: 1.8em;
+        font-weight: 300;
       }
 
-      .collection-link {
-        max-width: 650px;
-        margin: 100px auto;
-        text-align: center;
-        font-size: 14px;
-        line-height: 2;
+      .section-body:last-child { margin-bottom: 0; }
+
+      /* ─── Full-width imagery ─── */
+      .imagery-full {
+        width: 100%;
+        padding: 20px 0;
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .collection-link a {
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        color: #8c857e;
+      .imagery-full.visible {
+        opacity: 1;
+        transform: translateY(0);
       }
 
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      .imagery-container {
+        width: 75%;
+        max-width: 860px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
       }
 
-      /* Imagery */
-      .imagery {
-        width: 70%;
-        margin: 80px auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        animation: fadeIn 1.2s ease-out forwards;
-      }
-
-      .imagery img {
+      .imagery-container img {
         width: 100%;
         height: auto;
         display: block;
+        transition: transform 6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .imagery-container:hover img {
+        transform: scale(1.03);
       }
 
       .imagery-caption {
-        margin-top: 10px;
-        font-size: 0.6rem;
-        line-height: 1.6;
-        color: #8c857e;
-        opacity: 0.7;
+        max-width: 720px;
+        margin: 16px auto 0;
+        padding: 0 24px;
+        font-family: var(--sans);
+        font-size: 11px;
+        line-height: 1.8;
+        color: var(--muted);
+        opacity: 0.6;
+        letter-spacing: 0.01em;
       }
 
-      /* Footer */
+      /* ─── Collection CTA ─── */
+      .collection-cta {
+        padding: 100px 24px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .collection-cta.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .cta-text {
+        font-size: 14px;
+        line-height: 2;
+        color: var(--muted);
+        margin-bottom: 28px;
+        font-weight: 300;
+      }
+
+      .cta-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--sans);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text);
+        text-decoration: none;
+        padding: 14px 36px;
+        border: 1px solid rgba(0,0,0,0.12);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-button::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--text);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: -1;
+      }
+
+      .cta-button:hover {
+        color: var(--bg);
+        border-color: var(--text);
+      }
+
+      .cta-button:hover::before {
+        transform: scaleX(1);
+      }
+
+      .cta-arrow {
+        transition: transform 0.3s ease;
+      }
+
+      .cta-button:hover .cta-arrow {
+        transform: translateX(4px);
+      }
+
+      /* ─── Collection Preview ─── */
+      .collection-preview {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 24px 100px;
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .collection-preview.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .preview-title {
+        font-size: 13px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 28px;
+        font-weight: 400;
+      }
+
+      .preview-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .preview-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--divider);
+        transition: all 0.3s ease;
+        cursor: default;
+      }
+
+      .preview-item:first-child {
+        border-top: 1px solid var(--divider);
+      }
+
+      .preview-item:hover {
+        padding-left: 8px;
+      }
+
+      .preview-item-cat {
+        font-family: var(--sans);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 300;
+      }
+
+      .preview-item-name {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        font-weight: 400;
+      }
+
+      /* ─── Footer ─── */
       footer {
-        flex: 0 0 auto;
-        padding: 40px 24px 60px;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        border-top: 1px solid var(--divider);
+        padding: 56px 40px 72px;
       }
 
       .footer-inner {
-        max-width: 650px;
+        max-width: 720px;
         margin: 0 auto;
-        text-align: left;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 32px;
       }
 
-      .footer-note {
-        margin: 0;
-        font-size: 10px;
-        line-height: 1.8;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: #8c857e;
-      }
-
-      .footer-contact {
-        margin: 0;
-        text-align: right;
-        font-size: 10px;
-        line-height: 1.8;
+      .footer-brand {
+        font-size: 14px;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.3); /* 极致调淡 */
+        margin-bottom: 20px;
+        font-weight: 400;
       }
 
-      @media (max-width: 640px) {
-        .inner {
-          padding: 40px 20px 64px;
-        }
+      .footer-desc {
+        font-family: var(--sans);
+        font-size: 11px;
+        line-height: 1.9;
+        color: var(--muted);
+        font-weight: 300;
+        letter-spacing: 0.02em;
+      }
 
-        .hero {
-          min-height: 50vh;
-        }
+      .footer-right {
+        text-align: right;
+        font-family: var(--sans);
+        font-size: 10px;
+        line-height: 2.2;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 300;
+      }
 
-        .hero-title {
-          font-size: 26px;
-          letter-spacing: 0.26em;
-        }
+      .footer-bottom {
+        max-width: 720px;
+        margin: 40px auto 0;
+        padding-top: 24px;
+        border-top: 1px solid var(--divider);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-        .hero-subtitle {
-          font-size: 13px;
-          letter-spacing: 0.16em;
-        }
+      .footer-copy {
+        font-family: var(--sans);
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0.5;
+        font-weight: 300;
+      }
 
-        .section {
-          margin-bottom: 52px;
-        }
+      /* ─── Responsive ─── */
+      @media (max-width: 768px) {
+        nav { padding: 20px 24px; }
+        nav.scrolled { padding: 14px 24px; }
+        .nav-links { gap: 20px; }
+
+        .hero { min-height: 85vh; min-height: 85svh; padding: 100px 24px 60px; }
+        .hero-title { letter-spacing: 0.14em; }
+
+        .text-section { padding: 64px 0; }
+        .imagery-container { width: 90%; }
 
         .footer-inner {
           grid-template-columns: 1fr;
-          text-align: left;
-          gap: 32px;
+          gap: 40px;
         }
+        .footer-right { text-align: left; }
+        .footer-bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
+      }
 
-        .footer-contact {
-          text-align: left;
-        }
+      @media (max-width: 480px) {
+        /* FIX: Show hamburger, hide desktop nav links */
+        .nav-links { display: none; }
+        .hamburger { display: flex; }
+        .mobile-nav { display: flex; }
+
+        .hero-badge { font-size: 9px; }
+        .section-body { font-size: 14.5px; line-height: 2; }
+
+        footer { padding: 48px 24px 60px; }
+        .preview-item-name { font-size: 13px; }
+        .collection-cta { padding: 72px 24px; }
       }
     </style>
   </head>
 
   <body>
-    <div class="page">
-      <div class="shell">
-        <div class="inner">
-          <!-- Hero -->
-          <header class="hero" aria-label="Besong cover">
-            <div class="hero-content">
-              <h1 class="hero-title">Besong</h1>
-              <div class="hero-subtitle">A dialogue of soil and soul.</div>
-            </div>
-          </header>
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Navigation">
+      <a href="#story" onclick="closeMenu()">故事</a>
+      <a href="#philosophy" onclick="closeMenu()">理念</a>
+      <a href="collection.html">系列</a>
+    </div>
 
-          <!-- Sections -->
-          <main aria-label="Besong writings">
-            <!-- Section A: 原料的诚实 -->
-            <section class="section" aria-label="原料的诚实">
-              <h2 class="section-title">原料的诚实</h2>
-              <p class="section-body">
-                我们始终记得，一块面团最初的形态，只是面粉、水与酵母静静相遇的瞬间。
-                谷物从田间被收割、碾磨，再被带进这间安静的房间时，身上还带着风、阳光与土壤的重量；
-                发酵黄油在低温中缓慢软化，释放出的气味里，有远方牧场的青草与雨后的潮湿空气。
-              </p>
-              <p class="section-body">
-                我们不急于伸手改变它们，只是耐心地等待它们彼此适应。面筋的网状在时间中渐渐成形，微小的气泡像是从土地深处升起的呼吸。在这个过程中，每一种原料都保持着自己的性格：粗糙、细腻、安静或张扬，没有任何一种需要被技巧遮掩或被香料修饰。
-              </p>
-              <p class="section-body">
-                对我们来说，配方从来不是秘密，而是一种诚实的记录：写下是哪片土地的麦，
-                哪个季节的奶，怎样的水和怎样的盐。我们愿意退到最后，只做一个守望与照看的人；
-                让面团在属于自己的轨迹里慢慢醒来，让自然在其中完成一场从未中断的对谈。
-              </p>
-            </section>
+    <!-- Navigation -->
+    <nav id="mainNav">
+      <a href="index.html" class="nav-logo">Besong</a>
+      <ul class="nav-links">
+        <li><a href="#story">故事</a></li>
+        <li><a href="#philosophy">理念</a></li>
+        <li><a href="collection.html">系列</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </nav>
 
-            <figure class="imagery" aria-label="北欧风景占位图">
-              <img
-                src="https://images.unsplash.com/photo-1534620808146-d33bb39128b2?auto=format&fit=crop&w=1600&q=80"
-                alt="Soft northern landscape, muted tones and open sky"
-                loading="lazy"
-              />
-              <figcaption class="imagery-caption">
-                谷物在光线下呈现出颗粒的尊严——它们曾携带风与泥土，如今在这间实验室里静默。
-              </figcaption>
-            </figure>
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-badge">Est. 2026 · Dublin & Wuhan</div>
+      <h1 class="hero-title">Besong</h1>
+      <div class="hero-subtitle">A dialogue of soil and soul.</div>
+      <div class="hero-scroll">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+      </div>
+    </header>
 
-            <!-- Section B: 空间的留白 -->
-            <section class="section" aria-label="空间的留白">
-              <h2 class="section-title">空间的留白</h2>
-              <p class="section-body">
-                我们总觉得，面包并不是简单的食物单位，而是摆放在日常空间里的微型建筑。
-                外壳的弧度像一段小小的屋顶，裂纹是风长期停留后的痕迹；
-                内部柔软的组织，则像是一座城市看不见的内里——那些被呼吸、对话与沉默一点点撑起的空隙。
-              </p>
-              <p class="section-body">
-                因此，我们为每一枚面包预留足够的空间：桌面不需要拥挤，墙面可以保持沉默，
-                只让光线从窗外缓缓滑入，在表面停驻，再沿着切面缓慢下沉。
-                当一刀落下，碎屑轻轻散落，声音很小，却足以为一个下午定下新的节奏。
-              </p>
-              <p class="section-body">
-                有时是一枚仍带余温的碱水球，被带进书桌一角，在翻页与写字之间悄然冷却；
-                有时是一截长棍，横卧在餐桌中央，把家人之间的距离拉得更近一些。
-                当审美不再只停留在器物与陈列，而是悄悄延伸到餐盘、木板与指尖，
-                生活便在这样一口一口的咀嚼里，慢慢找回久违的留白与从容。
-              </p>
-            </section>
+    <div class="divider"></div>
 
-            <figure class="imagery" aria-label="北欧室内占位图">
-              <img
-                src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1600&q=80"
-                alt="Minimal northern interior with soft daylight"
-                loading="lazy"
-              />
-              <figcaption class="imagery-caption">
-                内部的微型建筑：由酵母呼吸出的气泡，撑起了贝颂对空间与留白的全部理解。
-              </figcaption>
-            </figure>
-
-            <!-- Section C: 双城叙事 -->
-            <section class="section" aria-label="双城叙事">
-              <h2 class="section-title">双城叙事</h2>
-              <p class="section-body">
-                都柏林的云层总是低低地压在海面上，潮汐一遍遍抚平沙岸，让我们学会什么叫做
-                「质感的耐心」：石墙在雨水中被时间慢慢磨亮，木窗在风里发出极轻的声响，
-                一切都不急于呈现锋利的边缘，只是反复提醒我们，真正持久的形态往往最安静。
-              </p>
-              <p class="section-body">
-                武汉则截然不同。江风带着湿度与烟火气，在桥梁与巷口之间来回穿梭；
-                清晨摊位升起的蒸汽，和深夜路边最后一盏灯，构成了另一种节奏。
-                这里的生活是热烈的、黏稠的，也是毫不掩饰的——一碗汤、一块点心，
-                都自然地带着人群与时间的气味。
-              </p>
-              <p class="section-body">
-                Besong 便在这两座城市之间，搭建起一条看不见的廊道。
-                我们在都柏林的清冷空气里校对温度与湿度，在武汉的晨光中唤醒沉睡一夜的面团；
-                静谧的审美与炽热的日常，并不是彼此抵消，而是在一枚枚面包的表面与内部，
-                找到可以共存的形态。于是一种新的节奏缓缓浮现：既像海边的潮起潮落，
-                也像江城渡口永不停歇的往来，在每一次咀嚼之间，悄悄完成一次双城的对话。
-              </p>
-            </section>
-
-            <div class="collection-link">
-              <p style="margin: 0 0 16px;">
-                每一个面团都有它的编号与情绪。点击此处，查看今日 Besong 实验室的成品清单。
-              </p>
-              <a href="collection.html">[ 查看完整系列 / View Collection ]</a>
-            </div>
-
-            <!-- Collection -->
-            <section class="section" aria-label="Collection">
-              <h2 class="section-title">Collection / 选集</h2>
-              <div style="display: grid; row-gap: 10px; column-gap: 24px;">
-                <div style="display: flex; justify-content: space-between; gap: 24px;">
-                  <div>Viennoiserie</div>
-                  <div>Classic Croissant</div>
-                </div>
-                <div style="display: flex; justify-content: space-between; gap: 24px;">
-                  <div>Viennoiserie</div>
-                  <div>Almond Morning Bun</div>
-                </div>
-                <div style="display: flex; justify-content: space-between; gap: 24px;">
-                  <div>Levain Loaves</div>
-                  <div>Malted Wheat Sourdough</div>
-                </div>
-                <div style="display: flex; justify-content: space-between; gap: 24px;">
-                  <div>Levain Loaves</div>
-                  <div>Sesame Country Bread</div>
-                </div>
-                <div style="display: flex; justify-content: space-between; gap: 24px;">
-                  <div>Small Bakes</div>
-                  <div>Citrus Olive Oil Cake</div>
-                </div>
-              </div>
-            </section>
-          </main>
-        </div>
+    <!-- Main Content -->
+    <main>
+      <!-- Section 01 -->
+      <div class="content-wrap" id="story">
+        <section class="text-section" data-reveal>
+          <span class="section-number">01</span>
+          <h2 class="section-title">原料的诚实</h2>
+          <p class="section-body">
+            我们始终记得，一块面团最初的形态，只是面粉、水与酵母静静相遇的瞬间。
+            谷物从田间被收割、碾磨，再被带进这间安静的房间时，身上还带着风、阳光与土壤的重量；
+            发酵黄油在低温中缓慢软化，释放出的气味里，有远方牧场的青草与雨后的潮湿空气。
+          </p>
+          <p class="section-body">
+            我们不急于伸手改变它们，只是耐心地等待它们彼此适应。面筋的网状在时间中渐渐成形，微小的气泡像是从土地深处升起的呼吸。在这个过程中，每一种原料都保持着自己的性格：粗糙、细腻、安静或张扬，没有任何一种需要被技巧遮掩或被香料修饰。
+          </p>
+          <p class="section-body">
+            对我们来说，配方从来不是秘密，而是一种诚实的记录：写下是哪片土地的麦，
+            哪个季节的奶，怎样的水和怎样的盐。我们愿意退到最后，只做一个守望与照看的人；
+            让面团在属于自己的轨迹里慢慢醒来，让自然在其中完成一场从未中断的对谈。
+          </p>
+        </section>
       </div>
 
-      <footer>
-        <div class="footer-inner">
-          <p class="footer-note">
-            CONCEIVED IN DUBLIN, PRESENTED IN WUHAN.<br />
-            于都柏林构思，于武汉呈现。<br />
-            REDEFINING HANDMADE TEMPERATURE THROUGH DIGITAL PRECISION.<br />
-            我们利用数字化的精准，只为重塑手工的温度。
+      <figure class="imagery-full" data-reveal>
+        <div class="imagery-container">
+          <img
+            src="https://images.unsplash.com/photo-1534620808146-d33bb39128b2?auto=format&fit=crop&w=1600&q=80"
+            alt="Soft northern landscape, muted tones and open sky"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="imagery-caption">
+          谷物在光线下呈现出颗粒的尊严——它们曾携带风与泥土，如今在这间实验室里静默。
+        </figcaption>
+      </figure>
+
+      <div class="divider"></div>
+
+      <!-- Section 02 -->
+      <div class="content-wrap" id="philosophy">
+        <section class="text-section" data-reveal>
+          <span class="section-number">02</span>
+          <h2 class="section-title">空间的留白</h2>
+          <p class="section-body">
+            我们总觉得，面包并不是简单的食物单位，而是摆放在日常空间里的微型建筑。
+            外壳的弧度像一段小小的屋顶，裂纹是风长期停留后的痕迹；
+            内部柔软的组织，则像是一座城市看不见的内里——那些被呼吸、对话与沉默一点点撑起的空隙。
           </p>
-          <div class="footer-contact">
-            <div>WUHAN HANYANG DIST.陶馨路22号附18号</div>
-            <div>CONTACT / 13476167632</div>
-            <div>BATCH NO. 2026-03-16</div>
+          <p class="section-body">
+            因此，我们为每一枚面包预留足够的空间：桌面不需要拥挤，墙面可以保持沉默，
+            只让光线从窗外缓缓滑入，在表面停驻，再沿着切面缓慢下沉。
+            当一刀落下，碎屑轻轻散落，声音很小，却足以为一个下午定下新的节奏。
+          </p>
+          <p class="section-body">
+            有时是一枚仍带余温的碱水球，被带进书桌一角，在翻页与写字之间悄然冷却；
+            有时是一截长棍，横卧在餐桌中央，把家人之间的距离拉得更近一些。
+            当审美不再只停留在器物与陈列，而是悄悄延伸到餐盘、木板与指尖，
+            生活便在这样一口一口的咀嚼里，慢慢找回久违的留白与从容。
+          </p>
+        </section>
+      </div>
+
+      <figure class="imagery-full" data-reveal>
+        <div class="imagery-container">
+          <img
+            src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1600&q=80"
+            alt="Artisan bread with rustic crust and open crumb"
+            loading="lazy"
+          />
+        </div>
+        <figcaption class="imagery-caption">
+          内部的微型建筑：由酵母呼吸出的气泡，撑起了贝颂对空间与留白的全部理解。
+        </figcaption>
+      </figure>
+
+      <div class="divider"></div>
+
+      <!-- Section 03 -->
+      <div class="content-wrap">
+        <section class="text-section" data-reveal>
+          <span class="section-number">03</span>
+          <h2 class="section-title">双城叙事</h2>
+          <p class="section-body">
+            都柏林的云层总是低低地压在海面上，潮汐一遍遍抚平沙岸，让我们学会什么叫做
+            「质感的耐心」：石墙在雨水中被时间慢慢磨亮，木窗在风里发出极轻的声响，
+            一切都不急于呈现锋利的边缘，只是反复提醒我们，真正持久的形态往往最安静。
+          </p>
+          <p class="section-body">
+            武汉则截然不同。江风带着湿度与烟火气，在桥梁与巷口之间来回穿梭；
+            清晨摊位升起的蒸汽，和深夜路边最后一盏灯，构成了另一种节奏。
+            这里的生活是热烈的、黏稠的，也是毫不掩饰的——一碗汤、一块点心，
+            都自然地带着人群与时间的气味。
+          </p>
+          <p class="section-body">
+            Besong 便在这两座城市之间，搭建起一条看不见的廊道。
+            我们在都柏林的清冷空气里校对温度与湿度，在武汉的晨光中唤醒沉睡一夜的面团；
+            静谧的审美与炽热的日常，并不是彼此抵消，而是在一枚枚面包的表面与内部，
+            找到可以共存的形态。于是一种新的节奏缓缓浮现：既像海边的潮起潮落，
+            也像江城渡口永不停歇的往来，在每一次咀嚼之间，悄悄完成一次双城的对话。
+          </p>
+        </section>
+      </div>
+
+      <!-- Collection CTA -->
+      <div class="collection-cta" data-reveal>
+        <p class="cta-text">
+          每一个面团都有它的编号与情绪。<br/>点击此处，查看今日 Besong 实验室的成品清单。
+        </p>
+        <a href="collection.html" class="cta-button">
+          <span>查看完整系列 / View Collection</span>
+          <span class="cta-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Collection Preview -->
+      <div class="collection-preview" data-reveal>
+        <h2 class="preview-title">Collection / 选集</h2>
+        <div class="preview-list">
+          <div class="preview-item">
+            <span class="preview-item-cat">Viennoiserie</span>
+            <span class="preview-item-name">Classic Croissant</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-item-cat">Viennoiserie</span>
+            <span class="preview-item-name">Almond Morning Bun</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-item-cat">Levain Loaves</span>
+            <span class="preview-item-name">Malted Wheat Sourdough</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-item-cat">Levain Loaves</span>
+            <span class="preview-item-name">Sesame Country Bread</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-item-cat">Small Bakes</span>
+            <span class="preview-item-name">Citrus Olive Oil Cake</span>
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">Besong</div>
+          <p class="footer-desc">
+            Conceived in Dublin, presented in Wuhan.<br/>
+            于都柏林构思，于武汉呈现。<br/><br/>
+            Redefining handmade temperature<br/>through digital precision.<br/>
+            我们利用数字化的精准，只为重塑手工的温度。
+          </p>
+        </div>
+        <div class="footer-right">
+          <div>Wuhan Hanyang Dist.</div>
+          <div>陶馨路22号附18号</div>
+          <div style="margin-top:12px;">Contact / 13476167632</div>
+          <div style="margin-top:12px;">Batch No. 2026-03-22</div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">&copy; 2026 Besong. All rights reserved.</span>
+        <span class="footer-copy">Crafted with patience.</span>
+      </div>
+    </footer>
+
+    <script>
+      // Nav scroll effect
+      const nav = document.getElementById('mainNav');
+      window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+      }, { passive: true });
+
+      // Hamburger menu
+      const hamburger = document.getElementById('hamburger');
+      const mobileNav = document.getElementById('mobileNav');
+
+      hamburger.addEventListener('click', () => {
+        const isOpen = mobileNav.classList.toggle('open');
+        hamburger.classList.toggle('open', isOpen);
+        hamburger.setAttribute('aria-expanded', isOpen);
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      });
+
+      function closeMenu() {
+        mobileNav.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+
+      // Close drawer on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu();
+      });
+
+      // Scroll reveal
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+
+      // Smooth anchor scroll
+      document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          closeMenu();
+          const target = document.querySelector(a.getAttribute('href'));
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    </script>
   </body>
 </html>
-

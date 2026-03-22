@@ -8,320 +8,890 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@300;400&display=swap"
       rel="stylesheet"
     />
 
     <style>
-      * {
-        box-sizing: border-box;
+      :root {
+        --bg: #f6f4f0;
+        --text: #2a2623;
+        --muted: #9b9590;
+        --accent: #c4a882;
+        --card-bg: #efece7;
+        --divider: rgba(0,0,0,0.06);
+        --serif: "Fraunces", Georgia, serif;
+        --sans: "Inter", -apple-system, sans-serif;
       }
 
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
 
       body {
-        background: #f9f8f6; /* 纸张米白 */
-        color: #2c2c2c; /* 炭灰正文 */
-        font-family: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--serif);
         -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
       }
 
-      a {
-        color: inherit;
+      /* ─── Noise texture overlay ───
+         FIX: Added explicit width/height to SVG + background-size
+      */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        background-size: 256px 256px;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* FIX: Disable on mobile */
+      @media (max-width: 768px) {
+        body::before { display: none; }
+      }
+
+      /* ─── Navigation ─── */
+      nav {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 200;
+        padding: 28px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      nav.scrolled {
+        padding: 16px 40px;
+        background: rgba(246,244,240,0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--divider);
+      }
+
+      .nav-logo {
+        font-family: var(--serif);
+        font-size: 15px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        font-weight: 400;
+        color: var(--text);
         text-decoration: none;
-        position: relative;
-        transition: opacity 160ms ease;
       }
 
-      a::after {
+      .nav-links {
+        display: flex;
+        gap: 32px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        font-family: var(--sans);
+        font-size: 11px;
+        font-weight: 300;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.3s ease;
+        position: relative;
+      }
+
+      .nav-links a::after {
         content: "";
         position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -2px;
-        height: 1px;
-        background: currentColor;
-        transform: scaleX(0);
-        transform-origin: center;
-        transition: transform 180ms ease;
-        opacity: 0.4;
+        bottom: -4px; left: 0;
+        width: 0; height: 1px;
+        background: var(--accent);
+        transition: width 0.3s ease;
       }
 
-      a:hover {
-        opacity: 0.7;
-      }
+      .nav-links a:hover { color: var(--text); }
+      .nav-links a:hover::after { width: 100%; }
+      .nav-links a.active { color: var(--text); }
+      .nav-links a.active::after { width: 100%; }
 
-      a:hover::after {
-        transform: scaleX(1);
-      }
-
-      .page {
-        min-height: 100vh;
-        display: flex;
+      /* ─── Hamburger (mobile) ─── */
+      .hamburger {
+        display: none;
         flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+        padding: 4px;
+        background: none;
+        border: none;
+        z-index: 300;
       }
 
-      .inner {
-        width: 100%;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 40px 40px 64px;
+      .hamburger span {
+        display: block;
+        width: 22px;
+        height: 1px;
+        background: var(--text);
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        transform-origin: center;
       }
 
-      /* Header */
-      header {
-        text-align: center;
-        margin: 0 auto 40px;
+      .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+      .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+      .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+      /* ─── Mobile Drawer ─── */
+      .mobile-nav {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(246,244,240,0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 150;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
       }
 
-      .title {
-        font-size: 26px;
-        letter-spacing: 0.3em;
+      .mobile-nav.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .mobile-nav a {
+        font-family: var(--serif);
+        font-size: clamp(28px, 8vw, 40px);
+        font-weight: 300;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        margin: 0 0 12px;
-      }
-
-      .subtitle {
-        font-size: 13px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: #8c857e;
-      }
-
-      .back-link {
-        margin-top: 16px;
-        font-size: 11px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: #8c857e;
-        opacity: 0.7;
-      }
-
-      .back-link a {
+        color: var(--text);
         text-decoration: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), color 0.2s ease;
       }
 
-      /* Grid */
-      main {
-        flex: 1 0 auto;
+      .mobile-nav.open a {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .mobile-nav.open a:nth-child(1) { transition-delay: 0.05s; }
+      .mobile-nav.open a:nth-child(2) { transition-delay: 0.1s; }
+      .mobile-nav.open a:nth-child(3) { transition-delay: 0.15s; }
+
+      .mobile-nav a:hover { color: var(--accent); }
+
+      /* ─── Header ─── */
+      .page-header {
+        padding: 160px 24px 80px;
         text-align: center;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeUp 1s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
-      .series {
-        margin: 0 auto 40px;
+      @keyframes fadeUp {
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .page-title {
+        font-size: clamp(28px, 5vw, 38px);
+        font-weight: 300;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      .page-subtitle {
+        font-family: var(--sans);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 300;
+      }
+
+      /* ─── Series ─── */
+      .series-section {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 40px 80px;
+      }
+
+      .series-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 36px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .series-header.visible { opacity: 1; transform: translateY(0); }
+
+      .series-number {
+        font-family: var(--sans);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        color: var(--accent);
+        font-weight: 300;
+      }
+
+      .series-line {
+        flex: 1;
+        height: 1px;
+        background: var(--divider);
       }
 
       .series-title {
         font-size: 12px;
         letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: #8c857e;
-        margin: 0 0 18px;
+        color: var(--muted);
+        font-weight: 400;
       }
 
-      .grid {
+      /* ─── Product Grid ─── */
+      .product-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 32px;
-        justify-content: center;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 36px;
       }
 
-      .item {
-        display: flex;
-        flex-direction: column;
-        text-align: center;
+      .product-card {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .thumb {
+      .product-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .product-card:nth-child(2) { transition-delay: 0.1s; }
+      .product-card:nth-child(3) { transition-delay: 0.2s; }
+
+      .product-thumb {
+        position: relative;
         width: 100%;
-        aspect-ratio: 1 / 1;
-        background: #f1efea;
+        aspect-ratio: 4 / 5;
+        background: var(--card-bg);
         overflow: hidden;
+        cursor: pointer;
       }
 
-      .thumb img {
+      .product-thumb img,
+      .product-thumb svg {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
+        transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .meta {
-        margin-top: 14px;
+      .product-thumb:hover img,
+      .product-thumb:hover svg {
+        transform: scale(1.05);
       }
 
-      .name {
-        font-size: 14px;
-        letter-spacing: 0.12em;
+      /* Overlay on hover */
+      .product-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(42, 38, 35, 0);
+        display: flex;
+        align-items: flex-end;
+        padding: 20px;
+        transition: background 0.4s ease;
+      }
+
+      .product-thumb:hover .product-overlay {
+        background: rgba(42, 38, 35, 0.08);
+      }
+
+      .product-tag {
+        font-family: var(--sans);
+        font-size: 9px;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
-        margin: 0 0 6px;
+        color: white;
+        background: rgba(42, 38, 35, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        padding: 6px 12px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .note {
-        margin: 0;
-        font-size: 0.7rem;
-        color: #8c857e;
+      .product-thumb:hover .product-tag {
+        opacity: 1;
+        transform: translateY(0);
       }
 
-      /* Footer */
+      .product-meta {
+        padding: 18px 4px 0;
+      }
+
+      .product-name {
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        font-weight: 400;
+      }
+
+      .product-name-cn {
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        margin-bottom: 8px;
+        font-weight: 300;
+      }
+
+      .product-note {
+        font-family: var(--sans);
+        font-size: 10.5px;
+        color: var(--muted);
+        line-height: 1.7;
+        font-weight: 300;
+        letter-spacing: 0.01em;
+      }
+
+      /* ─── Footer ─── */
       footer {
-        flex: 0 0 auto;
-        padding: 20px 24px 32px;
-        text-align: center;
+        border-top: 1px solid var(--divider);
+        padding: 48px 40px 64px;
+        margin-top: 40px;
       }
 
-      .back-link-footer {
+      .footer-inner {
+        max-width: 1080px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .footer-back a {
+        font-family: var(--sans);
         font-size: 11px;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #8c857e;
-        opacity: 0.7;
+        color: var(--muted);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.3s ease;
       }
 
+      .footer-back a:hover { color: var(--text); }
+
+      .back-arrow {
+        transition: transform 0.3s ease;
+      }
+
+      .footer-back a:hover .back-arrow {
+        transform: translateX(-4px);
+      }
+
+      .footer-copy {
+        font-family: var(--sans);
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0.5;
+        font-weight: 300;
+      }
+
+      /* ─── Responsive ─── */
       @media (max-width: 900px) {
-        .grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
+        .product-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+        .series-section { padding: 0 28px 60px; }
       }
 
       @media (max-width: 640px) {
-        .inner {
-          padding: 32px 24px 56px;
-        }
+        nav { padding: 20px 24px; }
+        nav.scrolled { padding: 14px 24px; }
+        .nav-links { gap: 20px; }
+        .page-header { padding: 130px 24px 60px; }
+        /* FIX: Removed max-width: 380px — too narrow on iPhone 390px + padding */
+        .product-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+        .series-section { padding: 0 24px 48px; }
+        footer { padding: 40px 24px 56px; }
+        .footer-inner { flex-direction: column; gap: 16px; }
+      }
 
-        .grid {
-          grid-template-columns: minmax(0, 1fr);
-        }
+      @media (max-width: 480px) {
+        /* FIX: Show hamburger, hide desktop nav */
+        .nav-links { display: none; }
+        .hamburger { display: flex; }
+        .mobile-nav { display: flex; }
+
+        .product-name { font-size: 13px; }
+        .product-name-cn { font-size: 12px; }
       }
     </style>
   </head>
 
   <body>
-    <div class="page">
-      <div class="inner">
-        <header aria-label="Collection header">
-          <h1 class="title">The Collection</h1>
-          <div class="subtitle">Selected daily from our laboratory.</div>
-          <div class="back-link">
-            <a href="besong.html">Back to Story</a>
-          </div>
-        </header>
-
-        <main aria-label="Product grid">
-          <!-- Series 01 -->
-          <section class="series" aria-label="Series 01 · The Viennoiseries">
-            <h2 class="series-title">Series 01 · The Viennoiseries</h2>
-            <div class="grid">
-              <article class="item" aria-label="Classic Croissant">
-                <div class="thumb">
-                  <img
-                    src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=1000&auto=format&fit=crop"
-                    alt="Classic croissant on a simple plate"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="meta">
-                  <h3 class="name">经典原味牛角 · Classic Croissant</h3>
-                  <p class="note">24h 发酵 · AOP 黄油 · 手工层次</p>
-                </div>
-              </article>
-
-              <article class="item" aria-label="Pain au Chocolat">
-                <div class="thumb">
-                  <img
-                    src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=1000&auto=format&fit=crop"
-                    alt="Pain au chocolat with chocolate batons"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="meta">
-                  <h3 class="name">巧克力潘诺尼 · Pain au Chocolat</h3>
-                  <p class="note">高可可率巧克力条 · 层次分明的起酥</p>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <!-- Series 02 -->
-          <section class="series" aria-label="Series 02 · The Hearth">
-            <h2 class="series-title">Series 02 · The Hearth</h2>
-            <div class="grid">
-              <article class="item" aria-label="Traditional Baguette">
-                <div class="thumb">
-                  <img
-                    src="https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1000&auto=format&fit=crop"
-                    alt="Traditional baguette with rustic crust"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="meta">
-                  <h3 class="name">传统法棍 · Traditional Baguette</h3>
-                  <p class="note">长时间冷发酵 · 薄脆外壳 · 轻盈内里</p>
-                </div>
-              </article>
-
-              <article class="item" aria-label="Sourdough Boule">
-                <div class="thumb">
-                  <img
-                    src="https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1000&auto=format&fit=crop"
-                    alt="Round sourdough boule on linen"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="meta">
-                  <h3 class="name">鲁邦种乡村面包 · Sourdough Boule</h3>
-                  <p class="note">鲁邦种天然酵母 · 深焦香 · 开放气室</p>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <!-- Series 03 -->
-          <section class="series" aria-label="Series 03 · The Afternoon">
-            <h2 class="series-title">Series 03 · The Afternoon</h2>
-            <div class="grid">
-              <article class="item" aria-label="Dublin Whisky Loaf">
-                <div class="thumb">
-                  <img
-                    src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?q=80&w=1000&auto=format&fit=crop"
-                    alt="Simple loaf cake on linen"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="meta">
-                  <h3 class="name">都柏林威士忌磅蛋糕 · Dublin Whisky Loaf</h3>
-                  <p class="note">爱尔兰威士忌浸润 · 细腻黄油组织</p>
-                </div>
-              </article>
-
-              <article class="item" aria-label="Saint-Honoré">
-                <div class="thumb">
-                  <img
-                    src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?q=80&w=1000&auto=format&fit=crop"
-                    alt="Refined plated dessert with caramel"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="meta">
-                  <h3 class="name">海盐焦糖圣多诺黑 · Saint-Honoré</h3>
-                  <p class="note">海盐焦糖 · 轻盈奶油 · 层次感泡芙</p>
-                </div>
-              </article>
-            </div>
-          </section>
-        </main>
-      </div>
-
-      <footer>
-        <div class="back-link-footer">
-          <a href="besong.html">Back to Story</a>
-        </div>
-      </footer>
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Navigation">
+      <a href="index.html">故事</a>
+      <a href="index.html#philosophy">理念</a>
+      <a href="collection.html">系列</a>
     </div>
+
+    <!-- Navigation -->
+    <nav id="mainNav">
+      <a href="index.html" class="nav-logo">Besong</a>
+      <ul class="nav-links">
+        <li><a href="index.html">故事</a></li>
+        <li><a href="index.html#philosophy">理念</a></li>
+        <li><a href="collection.html" class="active">系列</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </nav>
+
+    <!-- Header -->
+    <header class="page-header">
+      <h1 class="page-title">The Collection</h1>
+      <p class="page-subtitle">Selected daily from our laboratory</p>
+    </header>
+
+    <main>
+      <!-- Series 01 · Viennoiseries -->
+      <section class="series-section">
+        <div class="series-header" data-reveal>
+          <span class="series-number">01</span>
+          <div class="series-line"></div>
+          <h2 class="series-title">The Viennoiseries</h2>
+        </div>
+        <div class="product-grid">
+          <!-- Classic Croissant -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#e8ddd0"/>
+                    <stop offset="100%" stop-color="#d4c4b0"/>
+                  </linearGradient>
+                  <linearGradient id="cg2" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#c9b89e"/>
+                    <stop offset="100%" stop-color="#b5a48a"/>
+                  </linearGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="340" rx="110" ry="16" fill="rgba(0,0,0,0.04)"/>
+                <path d="M100,280 Q110,220 160,210 Q180,205 200,200 Q220,205 240,210 Q290,220 300,280 Q305,300 280,310 Q240,325 200,320 Q160,325 120,310 Q95,300 100,280Z" fill="url(#cg1)" stroke="#c4b39c" stroke-width="0.5"/>
+                <path d="M130,270 Q165,250 200,248 Q235,250 270,270" fill="none" stroke="#c4b39c" stroke-width="0.8" opacity="0.5"/>
+                <path d="M140,258 Q170,240 200,237 Q230,240 260,258" fill="none" stroke="#c4b39c" stroke-width="0.6" opacity="0.4"/>
+                <path d="M150,248 Q175,233 200,230 Q225,233 250,248" fill="none" stroke="#c4b39c" stroke-width="0.5" opacity="0.3"/>
+                <path d="M100,280 Q85,275 75,260 Q72,254 78,252 Q90,250 100,260" fill="url(#cg2)" stroke="#c4b39c" stroke-width="0.5"/>
+                <path d="M300,280 Q315,275 325,260 Q328,254 322,252 Q310,250 300,260" fill="url(#cg2)" stroke="#c4b39c" stroke-width="0.5"/>
+                <ellipse cx="190" cy="248" rx="28" ry="8" fill="rgba(255,255,255,0.15)"/>
+                <path d="M155,218 Q178,208 200,206 Q222,208 245,218" fill="none" stroke="#b5a080" stroke-width="1" opacity="0.3"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">24h Fermented</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Classic Croissant</h3>
+              <div class="product-name-cn">经典原味牛角</div>
+              <p class="product-note">24h 发酵 · AOP 黄油 · 手工层次</p>
+            </div>
+          </article>
+
+          <!-- Pain au Chocolat -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="pg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ddd0c2"/>
+                    <stop offset="100%" stop-color="#c9b9a4"/>
+                  </linearGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="340" rx="90" ry="14" fill="rgba(0,0,0,0.04)"/>
+                <rect x="120" y="220" rx="12" ry="12" width="160" height="100" fill="url(#pg1)" stroke="#c4b39c" stroke-width="0.5"/>
+                <line x1="130" y1="245" x2="270" y2="245" stroke="#b5a48a" stroke-width="0.6" opacity="0.4"/>
+                <line x1="130" y1="265" x2="270" y2="265" stroke="#b5a48a" stroke-width="0.6" opacity="0.4"/>
+                <line x1="130" y1="285" x2="270" y2="285" stroke="#b5a48a" stroke-width="0.6" opacity="0.35"/>
+                <rect x="135" y="252" rx="2" width="25" height="6" fill="#5a3e2b" opacity="0.7"/>
+                <rect x="240" y="252" rx="2" width="25" height="6" fill="#5a3e2b" opacity="0.7"/>
+                <rect x="135" y="272" rx="2" width="25" height="6" fill="#5a3e2b" opacity="0.6"/>
+                <rect x="240" y="272" rx="2" width="25" height="6" fill="#5a3e2b" opacity="0.6"/>
+                <path d="M120,232 Q200,215 280,232" fill="none" stroke="#c4b39c" stroke-width="0.8" opacity="0.4"/>
+                <rect x="150" y="225" rx="4" width="60" height="8" fill="rgba(255,255,255,0.12)"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">High Cacao</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Pain au Chocolat</h3>
+              <div class="product-name-cn">巧克力潘诺尼</div>
+              <p class="product-note">高可可率巧克力条 · 层次分明的起酥</p>
+            </div>
+          </article>
+
+          <!-- Almond Morning Bun -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="ag1" cx="50%" cy="45%" r="50%">
+                    <stop offset="0%" stop-color="#e8ddd0"/>
+                    <stop offset="100%" stop-color="#d0c0a8"/>
+                  </radialGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="340" rx="85" ry="12" fill="rgba(0,0,0,0.04)"/>
+                <ellipse cx="200" cy="270" rx="80" ry="55" fill="url(#ag1)" stroke="#c4b39c" stroke-width="0.5"/>
+                <path d="M200,230 Q230,240 225,265 Q220,285 195,285 Q170,285 168,265 Q166,248 185,240" fill="none" stroke="#b5a080" stroke-width="0.8" opacity="0.35"/>
+                <path d="M200,245 Q218,250 215,265 Q212,278 200,278 Q188,278 186,265" fill="none" stroke="#b5a080" stroke-width="0.6" opacity="0.25"/>
+                <ellipse cx="175" cy="245" rx="12" ry="4" transform="rotate(-20 175 245)" fill="#d8c8a8" stroke="#c4b39c" stroke-width="0.3" opacity="0.7"/>
+                <ellipse cx="220" cy="250" rx="11" ry="4" transform="rotate(15 220 250)" fill="#d8c8a8" stroke="#c4b39c" stroke-width="0.3" opacity="0.7"/>
+                <ellipse cx="195" cy="238" rx="10" ry="3.5" transform="rotate(-5 195 238)" fill="#ddd0b8" stroke="#c4b39c" stroke-width="0.3" opacity="0.6"/>
+                <ellipse cx="210" cy="240" rx="10" ry="3.5" transform="rotate(10 210 240)" fill="#ddd0b8" stroke="#c4b39c" stroke-width="0.3" opacity="0.6"/>
+                <ellipse cx="190" cy="255" rx="9" ry="3" transform="rotate(-10 190 255)" fill="#d8c8a8" stroke="#c4b39c" stroke-width="0.3" opacity="0.5"/>
+                <circle cx="180" cy="260" r="1" fill="rgba(255,255,255,0.4)"/>
+                <circle cx="210" cy="252" r="1.2" fill="rgba(255,255,255,0.35)"/>
+                <circle cx="195" cy="268" r="0.8" fill="rgba(255,255,255,0.3)"/>
+                <circle cx="220" cy="265" r="1" fill="rgba(255,255,255,0.35)"/>
+                <ellipse cx="192" cy="248" rx="22" ry="10" fill="rgba(255,255,255,0.1)"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Almond Praline</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Almond Morning Bun</h3>
+              <div class="product-name-cn">杏仁晨间卷</div>
+              <p class="product-note">杏仁碎 · 柠檬皮屑 · 焦糖边缘</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Series 02 · The Hearth -->
+      <section class="series-section">
+        <div class="series-header" data-reveal>
+          <span class="series-number">02</span>
+          <div class="series-line"></div>
+          <h2 class="series-title">The Hearth</h2>
+        </div>
+        <div class="product-grid">
+          <!-- Traditional Baguette -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="bg1" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#d8cab5"/>
+                    <stop offset="50%" stop-color="#c9b89e"/>
+                    <stop offset="100%" stop-color="#baa88c"/>
+                  </linearGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="380" rx="140" ry="8" fill="rgba(0,0,0,0.03)"/>
+                <path d="M80,360 Q65,340 75,310 Q90,260 120,210 Q150,165 190,140 Q210,130 230,138 Q260,150 280,190 Q310,240 325,300 Q335,340 320,360 Q310,375 290,370 Q250,365 200,365 Q140,368 110,372 Q90,375 80,360Z" fill="url(#bg1)" stroke="#b5a080" stroke-width="0.5"/>
+                <path d="M140,200 Q165,185 185,195" fill="none" stroke="#a89070" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+                <path d="M155,230 Q180,215 200,225" fill="none" stroke="#a89070" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+                <path d="M170,260 Q195,245 215,255" fill="none" stroke="#a89070" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+                <path d="M185,290 Q210,275 230,285" fill="none" stroke="#a89070" stroke-width="1.1" opacity="0.45" stroke-linecap="round"/>
+                <path d="M195,318 Q220,303 240,313" fill="none" stroke="#a89070" stroke-width="1" opacity="0.4" stroke-linecap="round"/>
+                <circle cx="160" cy="220" r="1.5" fill="rgba(255,255,255,0.3)"/>
+                <circle cx="185" cy="250" r="1" fill="rgba(255,255,255,0.25)"/>
+                <circle cx="200" cy="280" r="1.3" fill="rgba(255,255,255,0.25)"/>
+                <circle cx="175" cy="270" r="0.8" fill="rgba(255,255,255,0.2)"/>
+                <path d="M130,230 Q160,200 200,220" fill="rgba(255,255,255,0.08)" stroke="none"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Cold Fermented</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Traditional Baguette</h3>
+              <div class="product-name-cn">传统法棍</div>
+              <p class="product-note">长时间冷发酵 · 薄脆外壳 · 轻盈内里</p>
+            </div>
+          </article>
+
+          <!-- Sourdough Boule -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="sg1" cx="45%" cy="40%" r="55%">
+                    <stop offset="0%" stop-color="#d8c8b0"/>
+                    <stop offset="60%" stop-color="#c0a888"/>
+                    <stop offset="100%" stop-color="#a89070"/>
+                  </radialGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="350" rx="95" ry="16" fill="rgba(0,0,0,0.04)"/>
+                <ellipse cx="200" cy="270" rx="95" ry="80" fill="url(#sg1)" stroke="#a89070" stroke-width="0.5"/>
+                <path d="M160,230 Q200,215 240,230" fill="none" stroke="#8a7560" stroke-width="1.8" opacity="0.4" stroke-linecap="round"/>
+                <path d="M165,255 Q200,240 235,255" fill="none" stroke="#8a7560" stroke-width="1.8" opacity="0.4" stroke-linecap="round"/>
+                <path d="M155,228 Q145,240 150,255 Q165,242 175,232" fill="#c4b090" stroke="#a89070" stroke-width="0.5" opacity="0.5"/>
+                <ellipse cx="195" cy="250" rx="40" ry="25" fill="rgba(255,255,255,0.08)"/>
+                <circle cx="180" cy="245" r="1.5" fill="rgba(255,255,255,0.25)"/>
+                <circle cx="210" cy="240" r="1.2" fill="rgba(255,255,255,0.2)"/>
+                <circle cx="195" cy="255" r="1" fill="rgba(255,255,255,0.2)"/>
+                <circle cx="220" cy="250" r="1.3" fill="rgba(255,255,255,0.2)"/>
+                <circle cx="150" cy="270" r="2" fill="rgba(138,117,96,0.15)"/>
+                <circle cx="250" cy="275" r="2.5" fill="rgba(138,117,96,0.12)"/>
+                <circle cx="170" cy="295" r="1.8" fill="rgba(138,117,96,0.1)"/>
+                <circle cx="235" cy="290" r="2" fill="rgba(138,117,96,0.1)"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Levain Culture</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Sourdough Boule</h3>
+              <div class="product-name-cn">鲁邦种乡村面包</div>
+              <p class="product-note">鲁邦种天然酵母 · 深焦香 · 开放气室</p>
+            </div>
+          </article>
+
+          <!-- Sesame Country Bread -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="scg1" cx="50%" cy="42%" r="52%">
+                    <stop offset="0%" stop-color="#d5c5aa"/>
+                    <stop offset="100%" stop-color="#b09878"/>
+                  </radialGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="348" rx="90" ry="14" fill="rgba(0,0,0,0.04)"/>
+                <ellipse cx="200" cy="268" rx="88" ry="72" fill="url(#scg1)" stroke="#a08868" stroke-width="0.5"/>
+                <path d="M145,250 Q200,230 255,250" fill="none" stroke="#8a7558" stroke-width="1.5" opacity="0.4" stroke-linecap="round"/>
+                <ellipse cx="170" cy="238" rx="3" ry="1.5" transform="rotate(-20 170 238)" fill="#d8c8a0" opacity="0.6"/>
+                <ellipse cx="195" cy="232" rx="3" ry="1.5" transform="rotate(10 195 232)" fill="#d8c8a0" opacity="0.6"/>
+                <ellipse cx="220" cy="236" rx="3" ry="1.5" transform="rotate(-5 220 236)" fill="#d8c8a0" opacity="0.55"/>
+                <ellipse cx="180" cy="250" rx="2.5" ry="1.3" transform="rotate(15 180 250)" fill="#d0c090" opacity="0.5"/>
+                <ellipse cx="210" cy="248" rx="2.5" ry="1.3" transform="rotate(-8 210 248)" fill="#d0c090" opacity="0.5"/>
+                <ellipse cx="235" cy="255" rx="3" ry="1.5" transform="rotate(20 235 255)" fill="#d8c8a0" opacity="0.5"/>
+                <ellipse cx="160" cy="258" rx="2.5" ry="1.3" transform="rotate(-12 160 258)" fill="#d0c090" opacity="0.45"/>
+                <ellipse cx="200" cy="242" rx="2.5" ry="1.2" transform="rotate(5 200 242)" fill="#d8c8a0" opacity="0.55"/>
+                <ellipse cx="185" cy="260" rx="2.5" ry="1.3" transform="rotate(-15 185 260)" fill="#d0c090" opacity="0.45"/>
+                <ellipse cx="225" cy="245" rx="2.5" ry="1.2" transform="rotate(18 225 245)" fill="#d8c8a0" opacity="0.5"/>
+                <ellipse cx="190" cy="245" rx="30" ry="15" fill="rgba(255,255,255,0.08)"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Sesame Crust</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Sesame Country Bread</h3>
+              <div class="product-name-cn">芝麻乡村面包</div>
+              <p class="product-note">白芝麻外壳 · 鲁邦种 · 深层风味</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Series 03 · The Afternoon -->
+      <section class="series-section">
+        <div class="series-header" data-reveal>
+          <span class="series-number">03</span>
+          <div class="series-line"></div>
+          <h2 class="series-title">The Afternoon</h2>
+        </div>
+        <div class="product-grid">
+          <!-- Dublin Whisky Loaf -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="wg1" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#c8a878"/>
+                    <stop offset="100%" stop-color="#a88858"/>
+                  </linearGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <rect x="138" y="350" rx="2" width="124" height="6" fill="rgba(0,0,0,0.03)"/>
+                <path d="M135,340 L140,240 Q142,230 155,230 L245,230 Q258,230 260,240 L265,340 Z" fill="#e0d5c5" stroke="#c4b090" stroke-width="0.5"/>
+                <path d="M145,240 Q148,200 165,185 Q185,170 200,168 Q215,170 235,185 Q252,200 255,240" fill="url(#wg1)" stroke="#a08050" stroke-width="0.5"/>
+                <path d="M175,185 Q200,175 225,185" fill="none" stroke="#907040" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+                <ellipse cx="195" cy="195" rx="20" ry="10" fill="rgba(255,255,255,0.12)"/>
+                <circle cx="175" cy="210" r="2" fill="#8a6838" opacity="0.3"/>
+                <circle cx="215" cy="205" r="1.8" fill="#8a6838" opacity="0.25"/>
+                <circle cx="195" cy="220" r="1.5" fill="#8a6838" opacity="0.2"/>
+                <circle cx="230" cy="218" r="1.8" fill="#8a6838" opacity="0.25"/>
+                <circle cx="165" cy="225" r="1.5" fill="#8a6838" opacity="0.2"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Irish Whisky</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Dublin Whisky Loaf</h3>
+              <div class="product-name-cn">都柏林威士忌磅蛋糕</div>
+              <p class="product-note">爱尔兰威士忌浸润 · 细腻黄油组织</p>
+            </div>
+          </article>
+
+          <!-- Saint-Honoré -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="shg1" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#f0e8d8"/>
+                    <stop offset="100%" stop-color="#e0d4c0"/>
+                  </radialGradient>
+                  <linearGradient id="caramel" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#c09048"/>
+                    <stop offset="100%" stop-color="#a07030"/>
+                  </linearGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="350" rx="80" ry="10" fill="rgba(0,0,0,0.03)"/>
+                <ellipse cx="200" cy="310" rx="75" ry="15" fill="#ddd0b8" stroke="#c4b090" stroke-width="0.5"/>
+                <ellipse cx="200" cy="280" rx="45" ry="25" fill="url(#shg1)" stroke="#d4c8b0" stroke-width="0.5"/>
+                <path d="M175,270 Q185,255 200,252 Q215,255 225,270" fill="rgba(255,255,255,0.2)" stroke="none"/>
+                <circle cx="140" cy="300" r="16" fill="#dcc8a8" stroke="#c4b090" stroke-width="0.4"/>
+                <circle cx="170" cy="290" r="15" fill="#d8c4a4" stroke="#c4b090" stroke-width="0.4"/>
+                <circle cx="230" cy="290" r="15" fill="#d8c4a4" stroke="#c4b090" stroke-width="0.4"/>
+                <circle cx="260" cy="300" r="16" fill="#dcc8a8" stroke="#c4b090" stroke-width="0.4"/>
+                <circle cx="200" cy="285" r="14" fill="#d4c0a0" stroke="#c4b090" stroke-width="0.4"/>
+                <path d="M145,292 Q155,285 170,282" fill="none" stroke="url(#caramel)" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+                <path d="M225,282 Q240,285 255,292" fill="none" stroke="url(#caramel)" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+                <path d="M185,278 Q200,275 215,278" fill="none" stroke="url(#caramel)" stroke-width="1.5" opacity="0.4" stroke-linecap="round"/>
+                <circle cx="168" cy="286" r="4" fill="rgba(255,255,255,0.15)"/>
+                <circle cx="232" cy="286" r="4" fill="rgba(255,255,255,0.15)"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Sea Salt Caramel</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Saint-Honoré</h3>
+              <div class="product-name-cn">海盐焦糖圣多诺黑</div>
+              <p class="product-note">海盐焦糖 · 轻盈奶油 · 层次感泡芙</p>
+            </div>
+          </article>
+
+          <!-- Citrus Olive Oil Cake -->
+          <article class="product-card" data-reveal>
+            <div class="product-thumb">
+              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="og1" cx="50%" cy="45%" r="50%">
+                    <stop offset="0%" stop-color="#e8d8b0"/>
+                    <stop offset="100%" stop-color="#d0c090"/>
+                  </radialGradient>
+                </defs>
+                <rect fill="#efece7" width="400" height="500"/>
+                <ellipse cx="200" cy="345" rx="80" ry="10" fill="rgba(0,0,0,0.03)"/>
+                <ellipse cx="200" cy="310" rx="78" ry="18" fill="#d8c8a0" stroke="#c4b080" stroke-width="0.5"/>
+                <path d="M122,310 L122,260 Q122,250 200,250 Q278,250 278,260 L278,310" fill="url(#og1)" stroke="#c4b080" stroke-width="0.5"/>
+                <ellipse cx="200" cy="260" rx="78" ry="14" fill="#e0d0a8" stroke="#c4b080" stroke-width="0.5"/>
+                <circle cx="180" cy="258" r="12" fill="none" stroke="#d4a850" stroke-width="0.8" opacity="0.4"/>
+                <line x1="180" y1="248" x2="180" y2="268" stroke="#d4a850" stroke-width="0.4" opacity="0.3"/>
+                <line x1="170" y1="258" x2="190" y2="258" stroke="#d4a850" stroke-width="0.4" opacity="0.3"/>
+                <line x1="172" y1="250" x2="188" y2="266" stroke="#d4a850" stroke-width="0.4" opacity="0.3"/>
+                <line x1="188" y1="250" x2="172" y2="266" stroke="#d4a850" stroke-width="0.4" opacity="0.3"/>
+                <circle cx="220" cy="256" r="10" fill="none" stroke="#d4a850" stroke-width="0.7" opacity="0.35"/>
+                <line x1="220" y1="248" x2="220" y2="264" stroke="#d4a850" stroke-width="0.4" opacity="0.25"/>
+                <line x1="212" y1="256" x2="228" y2="256" stroke="#d4a850" stroke-width="0.4" opacity="0.25"/>
+                <ellipse cx="195" cy="256" rx="35" ry="8" fill="rgba(200,180,100,0.08)"/>
+                <circle cx="160" cy="256" r="0.8" fill="rgba(255,255,255,0.35)"/>
+                <circle cx="240" cy="258" r="1" fill="rgba(255,255,255,0.3)"/>
+                <circle cx="200" cy="252" r="0.8" fill="rgba(255,255,255,0.25)"/>
+                <path d="M235,250 Q240,245 245,248" fill="none" stroke="#8a9868" stroke-width="0.6" opacity="0.35"/>
+                <path d="M240,245 Q243,240 248,242" fill="none" stroke="#8a9868" stroke-width="0.5" opacity="0.3"/>
+              </svg>
+              <div class="product-overlay">
+                <span class="product-tag">Olive Oil</span>
+              </div>
+            </div>
+            <div class="product-meta">
+              <h3 class="product-name">Citrus Olive Oil Cake</h3>
+              <div class="product-name-cn">柑橘橄榄油蛋糕</div>
+              <p class="product-note">初榨橄榄油 · 柑橘皮屑 · 迷迭香</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-back">
+          <a href="index.html">
+            <span class="back-arrow">←</span>
+            <span>Back to Story</span>
+          </a>
+        </div>
+        <span class="footer-copy">&copy; 2026 Besong</span>
+      </div>
+    </footer>
+
+    <script>
+      // Nav scroll
+      const nav = document.getElementById('mainNav');
+      window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+      }, { passive: true });
+
+      // Hamburger menu
+      const hamburger = document.getElementById('hamburger');
+      const mobileNav = document.getElementById('mobileNav');
+
+      hamburger.addEventListener('click', () => {
+        const isOpen = mobileNav.classList.toggle('open');
+        hamburger.classList.toggle('open', isOpen);
+        hamburger.setAttribute('aria-expanded', isOpen);
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          mobileNav.classList.remove('open');
+          hamburger.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+        }
+      });
+
+      // Scroll reveal with stagger
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: '0px 0px -30px 0px' }
+      );
+
+      document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+    </script>
   </body>
 </html>
-
